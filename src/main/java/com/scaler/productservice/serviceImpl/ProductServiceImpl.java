@@ -1,15 +1,18 @@
 package com.scaler.productservice.serviceImpl;
 
 import com.scaler.productservice.DTO.ProductDTO;
+import com.scaler.productservice.DTO.UserDTO;
+import com.scaler.productservice.commons.AuthenticationCommons;
 import com.scaler.productservice.model.Category;
 import com.scaler.productservice.model.Product;
+import com.scaler.productservice.model.Visibility;
 import com.scaler.productservice.repositories.CategoryRepository;
 import com.scaler.productservice.repositories.ProductRepository;
-import com.scaler.productservice.service.CategoryService;
 import com.scaler.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +24,18 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final AuthenticationCommons authenticationCommons;
 
-    ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, AuthenticationCommons authenticationCommons) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.authenticationCommons = authenticationCommons;
     }
 
     @Override
-    public List<ProductDTO> getAllProducts() {
+    public List<ProductDTO> getAllProducts(int pageNumber, int pageSize) {
         System.out.println("Fetching all products");
-        List<Product> products =  productRepository.findAll();
+        Page<Product> products =  productRepository.findAll(PageRequest.of(pageNumber, pageSize));
         List<ProductDTO> productDTOS = new ArrayList<>();
         for(Product product : products ){
             ProductDTO productDTO = convertProductToProductDTO(product);
@@ -99,10 +104,32 @@ public class ProductServiceImpl implements ProductService {
           productRepository.deleteById(Math.toIntExact(id));
     }
 
+    @Override
+    public ProductDTO getProductBasedOnUserRole(Long productId, Long userId) {
+        return null;
+    }
+
+//    @Override
+//    public ProductDTO getProductBasedOnUserRole(Long productId, Long userId) {
+//        Optional<Product> productOpt = productRepository.findById(Math.toIntExact(productId));
+//        if (productOpt.isEmpty()) {
+//            return null;
+//        }
+//        if (productOpt.get().getVisibility().equals(Visibility.PUBLIC)) {
+//            return convertProductToProductDTO(productOpt.get());
+//        } else {
+//            UserDTO userDTO = authenticationCommons.getUserById(userId);
+//            if (userDTO.getRoleDTOS().equals("ADMIN")) {
+//                return convertProductToProductDTO(productOpt.get());
+//            } else{
+//                    throw new RuntimeException("User is not authorized to view this product");
+//                }
+//            }
+//        }
 
     public Product convertProductDTOtoProduct(ProductDTO productDTO){
         Product product = new Product();
-        product.setId(productDTO.getId());
+//        product.setId(productDTO.getId());
         product.setDescription(productDTO.getDescription());
         product.setPrice(productDTO.getPrice());
         product.setTitle(productDTO.getTitle());
@@ -118,7 +145,7 @@ public class ProductServiceImpl implements ProductService {
         productDTO.setCategory(product.getCategory().getName());
         productDTO.setTitle(product.getTitle());
         productDTO.setPrice(product.getPrice());
-        productDTO.setId(product.getId());
+//        productDTO.setId(product.getId());
         productDTO.setDescription(product.getDescription());
         productDTO.setImage(product.getImageUrl());
         return productDTO;

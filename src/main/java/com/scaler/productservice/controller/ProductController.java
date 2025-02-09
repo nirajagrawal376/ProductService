@@ -18,15 +18,21 @@ public class ProductController {
 
     private AuthenticationCommons authenticationCommons;
 
-    ProductController(@Qualifier("productServiceImpl") ProductService productService, AuthenticationCommons authenticationCommons) {
+    ProductController(@Qualifier("fakeStoreProductService") ProductService productService, AuthenticationCommons authenticationCommons) {
         this.productService = productService;
         this.authenticationCommons = authenticationCommons;;
     }
 
     @GetMapping()
-    public List<ProductDTO> getAllProducts(@RequestHeader("AuthnticationToken") String token){
-        authenticationCommons.ValidateToken(token);
-        return productService.getAllProducts();
+    public List<ProductDTO> getAllProducts(//@RequestHeader("AuthnticationToken") String token,
+                                           @RequestParam(value = "pageNumber", defaultValue = "0")
+                                           int pageNumber,
+                                           @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+    //    authenticationCommons.ValidateToken(token);
+
+        // AS now I have added the spring security configuration so I will not be needing this
+        // cause this authentication is managed by spring security
+        return productService.getAllProducts(pageNumber, pageSize);
     }
 
     @GetMapping("/{id}")
@@ -52,6 +58,12 @@ public class ProductController {
     @PostMapping("/validate")
     public void validateToken(String token){
 
+    }
+
+    @GetMapping("{productId}/{userId}")
+    public ProductDTO getProductBasedOnUserRole(@PathVariable("productId") Long productId,@PathVariable("userId") Long userId){
+        ProductDTO productDTO = productService.getProductBasedOnUserRole(productId, userId);
+        return productDTO;
     }
 }
 

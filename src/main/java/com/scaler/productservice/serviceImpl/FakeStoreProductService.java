@@ -4,6 +4,7 @@ import com.scaler.productservice.model.Category;
 import com.scaler.productservice.model.Product;
 import com.scaler.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
+//import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpMessageConverterExtractor;
@@ -21,12 +22,20 @@ public class FakeStoreProductService implements ProductService {
 
     RestTemplate restTemplate;
 
-    FakeStoreProductService(RestTemplate restTemplate){
+ //   RedisTemplate redisTemplate;
+
+
+
+
+    FakeStoreProductService(RestTemplate restTemplate
+         //   , RedisTemplate redisTemplate
+    ) {
         this.restTemplate = restTemplate;
+      //  this.redisTemplate=redisTemplate;
     }
     public Product convertProductDTOtoProduct(ProductDTO fakeStoreProductDTO){
         Product product = new Product();
-        product.setId(fakeStoreProductDTO.getId());
+//        product.setId(fakeStoreProductDTO.getId());
         product.setDescription(fakeStoreProductDTO.getDescription());
         product.setPrice(fakeStoreProductDTO.getPrice());
         product.setTitle(fakeStoreProductDTO.getTitle());
@@ -42,26 +51,38 @@ public class FakeStoreProductService implements ProductService {
         fakeStoreProductDTO.setCategory(product.getCategory().getName());
         fakeStoreProductDTO.setTitle(product.getTitle());
         fakeStoreProductDTO.setPrice(product.getPrice());
-        fakeStoreProductDTO.setId(product.getId());
+//        fakeStoreProductDTO.setId(product.getId());
         fakeStoreProductDTO.setDescription(product.getDescription());
         fakeStoreProductDTO.setImage(product.getImageUrl());
         return fakeStoreProductDTO;
     }
 
+//    @Override
+//    public List<ProductDTO> getAllProducts() {
+//        ProductDTO[] productDTOs = restTemplate.getForObject(
+//                "https://fakestoreapi.com/products",
+//                ProductDTO[].class);
+//        return new ArrayList<>(Arrays.asList(productDTOs));
+//    }
+
     @Override
-    public List<ProductDTO> getAllProducts() {
-        ProductDTO[] productDTOs = restTemplate.getForObject(
-                "https://fakestoreapi.com/products",
-                ProductDTO[].class);
-        return new ArrayList<>(Arrays.asList(productDTOs));
+    public List<ProductDTO> getAllProducts(int pageNumber, int pageSize) {
+        return List.of();
     }
 
     @Override
     public ProductDTO getSingleProduct(Long id ) {
+      // Product p =  (Product) redisTemplate.opsForHash().get("PRODUCT","PRODUCT_"+id);
+        Product p = new Product();
+        if ( p!=null){
+           return convertProductToProductDTO(p);
+       }
         ProductDTO productDTO = restTemplate.getForObject(
                 "https://fakestoreapi.com/products/"+1,
                 ProductDTO.class
         ); // this method takes 2 arguments 1. url 2. the data type of data that we will get back ( DTO )
+
+       // redisTemplate.opsForHash().put("PRODUCT","PRODUCT_"+id,convertProductDTOtoProduct(productDTO));
         return productDTO;
     }
 
@@ -91,5 +112,10 @@ public class FakeStoreProductService implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         restTemplate.delete("https://fakestoreapi.com/products/"+id);
+    }
+
+    @Override
+    public ProductDTO getProductBasedOnUserRole(Long productId, Long userId) {
+        return null;
     }
 }

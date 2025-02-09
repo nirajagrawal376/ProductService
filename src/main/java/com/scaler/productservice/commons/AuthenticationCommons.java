@@ -17,7 +17,7 @@ public class AuthenticationCommons {
     public UserDTO ValidateToken(String token) {
         // Here i will send a request to the user service to validate the token
         ResponseEntity<UserDTO> userDTOResponse = restTemplate.postForEntity(
-                "http://localhost:8181/users/validate/" + token,
+                "http://localhost:9001/users/validate/" + token,
                 null,
                 UserDTO.class
         );
@@ -26,5 +26,10 @@ public class AuthenticationCommons {
         }else{
             return userDTOResponse.getBody();
         }
+    }
+
+    public UserDTO getUserById(Long id){
+        UserDTO userDTO = restTemplate.getForEntity("http://localhost:8181/users/"+id, UserDTO.class).getBody();
+            return userDTO;
     }
 }
